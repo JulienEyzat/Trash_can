@@ -93,24 +93,24 @@ else
         if [[ $verbose = "true" ]]; then
             echo removing "$files"
         fi
-        corrected_file=""
-        if [[ `echo $files | grep -e "/$"` ]]; then
-            corrected_file=${files::-1}
-        else
-            corrected_file=$files
-        fi
-        if [[ -a $corrected_file ]]; then
+        if [[ -a $files ]]; then
             current_dir=`pwd`
-            if [[ -d $corrected_file ]]; then
-                for files_in_dir in `find $corrected_file`; do
-                    touch "$files_in_dir"
-                    complete_dir="$current_dir/$files_in_dir"
-                    final_dir=${complete_dir%/*}
-                    file="${complete_dir##*/}"
-                    echo "$file $final_dir" >> $recoverFile
-                done
+            touch "$files"
+            if [[ -d $files ]]; then
+                corrected_file=""
+                if [[ `echo $files | grep -e "/$"` ]]; then
+                    corrected_file=${files*/}
+                else
+                    corrected_file="$files"
+                fi
+                complete_dir="$current_dir/$corrected_file"
+                final_dir=${complete_dir%/*}
+                file="${complete_dir##*/}"
+                echo "complete $complete_dir"
+                echo "final $final_dir"
+                echo "file $file"
+                echo "$file $final_dir" >> $recoverFile
             else
-                touch "$corrected_file"
                 complete_dir="$current_dir/$corrected_file"
                 final_dir=${complete_dir%/*}
                 file="${complete_dir##*/}"
