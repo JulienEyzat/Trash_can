@@ -7,7 +7,7 @@ USAGE:
     trash [option] files to remove
 
 VERSION:
-    4.0
+    4.1
 
 OPTION:
     -c clear the trash can
@@ -71,7 +71,7 @@ elif [[ $1 = "-d" ]]; then
     shift 1
     for files do
         rm -r $trashPos$files
-        grep -v -e "^$files" < $recoverFile > $tmp
+        grep -v -e "^$files$delimiter" < $recoverFile > $tmp
         cat $tmp > $recoverFile
         echo "$files deleted"
     done
@@ -81,7 +81,6 @@ elif [[ $1 = "-old" ]]; then
     if [[ $# != 2 ]]; then
         echo "trash -r number_of_days"
     else
-        # find $trashPos -mtime +$2 -exec rm -r "{}" \;
         path_length=`find $trashPos -maxdepth 0 | tr "/" " " | wc -w`
         real_path_length=$(($path_length+2))
         files=`find $trashPos -mtime +$2 | cut -d '/' -f $real_path_length`
@@ -89,9 +88,9 @@ elif [[ $1 = "-old" ]]; then
         for (( i = 1; i < $(($files_length+1)); i++ )); do
             file=`echo $files | cut -d " " -f $i`
             rm -r $trashPos$file
-            grep -v -e "^$files" < $recoverFile > $tmp
+            grep -v -e "^$files$delimiter" < $recoverFile > $tmp
             cat $tmp > $recoverFile
-            echo "$files deleted"
+            echo "$file deleted"
         done
     fi
 
@@ -104,36 +103,47 @@ elif [[ $1 = "-r" ]]; then
     fi
     shift 1
     for files do
-        if [[ `grep $recoverFile -e "^$files"` ]]; then
-            last_dir=`grep -e "^$files" < $recoverFile | cut -d $delimiter -f 2`
+        if [[ `grep $recoverFile -e "^$files$delimiter"` ]]; then
+            last_dir=`grep -e "^$files$delimiter" < $recoverFile | cut -d $delimiter -f 2`
             mv "$trashPos$files" $last_dir
-            grep -v -e "^$files" < $recoverFile > $tmp
+            grep -v -e "^$files$delimiter" < $recoverFile > $tmp
             cat $tmp > $recoverFile
         fi
     done
 
 #Update the recoveryFile. Useful when the trash can is modified without
 #using the trash command
-#I could also check if a file was directly removed in the trash can
 elif [[ $1 = "-u" ]]; then
+    #Add added files in the recovery file
     for files in $trashPos*
     do
         if [[ -d $files ]]; then
             file=${files::-1}
             directory="${files##*/}"
             final_dir="$directory/"
-            if [[ `grep -e "^$final_dir" < $recoverFile` ]]; then
+            if [[ `grep -e "^$final_dir$delimiter" < $recoverFile` ]]; then
                 e=""
             else
                 echo "$final_dir$delimiter$default_recover_directory" >> $recoverFile
             fi
         else
             file="${files##*/}"
-            if [[ `grep -e "^$file" < $recoverFile` ]]; then
+            if [[ `grep -e "^$file$delimiter" < $recoverFile` ]]; then
                 e=""
             else
                 echo "$file$delimiter$default_recover_directory" >> $recoverFile
             fi
+        fi
+    done
+
+    #Remove removed files in the recovery file
+    for files in `cat $recoverFile | cut -d "$delimiter" -f 1`
+    do
+        if [[ `ls $trashPos | grep -e "^$files"` ]]; then
+            e=""
+        else
+            grep -v -e "^$files$delimiter" < $recoverFile > $tmp
+            cat $tmp > $recoverFile
         fi
     done
 
@@ -167,7 +177,7 @@ else
             fi
             mv "$corrected_file" "$trashPos"
         else
-            echo "The file or directory $corrected_file doesn't exist"
+            echo "The file or directory $files doesn't exist"
         fi
     done
 fi
