@@ -2,45 +2,45 @@
 
 echo "==========================="
 echo "add a file to the trash can"
-echo ""
+echo "==========================="
 echo "current state of the trash can"
-trash.sh -l
+./trash -l
 touch test_file
-trash.sh test_file
+./trash test_file
 echo "new state of the trash can"
-trash.sh -l
+./trash -l
 echo "remove the file from the trash can"
-trash.sh -d test_file
+./trash -d test_file
 echo "new state of the trash can"
-trash.sh -l
+./trash -l
 
 
 echo "==========================="
 echo "add a folder to the trash can"
-echo ""
+echo "==========================="
 echo "current state of the trash can"
-trash.sh -l
+./trash -l
 mkdir test_folder
 touch test_folder/aa
-trash.sh test_folder
+./trash test_folder/
 echo "new state of the trash can"
-trash.sh -l
+./trash -l
 echo "remove the folder from the trash can"
-trash.sh -d test_folder
+./trash -d test_folder/
 echo "new state of the trash can"
-trash.sh -l
+./trash -l
 
 
 echo "==========================="
 echo "add a file to the trash can and recover it"
-echo ""
+echo "==========================="
 echo "current state of the trash can"
-trash.sh -l
-touch aa
-trash.sh test_recover
+./trash -l
+touch test_recover
+./trash test_recover
 echo "new state of the trash can"
-trash.sh -l
+./trash -l
 echo "recover the file from the trash can"
-trash.sh -r test_recover
+./trash -r test_recover
 echo "new state of the trash can"
-trash.sh -l
+./trash -l

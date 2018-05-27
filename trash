@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 usage='NAME:
     trash - manage a trash can by command line
@@ -69,11 +69,14 @@ elif [[ $1 = "-debug" ]]; then
 #Definitely delete the files passed in argument
 elif [[ $1 = "-d" ]]; then
     shift 1
-    for files do
-        rm -r $trashPos$files
-        grep -v -e "^$files$delimiter" < $recoverFile > $tmp
-        cat $tmp > $recoverFile
-        echo "$files deleted"
+    for file do
+        echo $file
+        if [[ `grep $recoverFile -e "^$file$delimiter"` ]]; then
+          rm -r $trashPos$file
+          grep -v -e "^$file$delimiter" < $recoverFile > $tmp
+          cat $tmp > $recoverFile
+          echo "$file deleted"
+        fi
     done
 
 #Delete the files older than the second argument given
